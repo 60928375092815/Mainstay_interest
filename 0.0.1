@@ -1,0 +1,89 @@
+python
+import tkinter as tk
+from functools import partial
+
+# Function definitions remain unchanged
+def simple_interest(principal, rate, time):
+    return (principal * rate * time) / 100
+
+def compound_interest(principal, rate, time, num_periods=12):
+    effective_rate = pow((1 + rate / num_periods), (num_periods / 12)) - 1
+    amount = principal * pow(effective_rate + 1, num_periods * time)
+    ci = amount - principal
+    return ci
+
+class CalculatorApp:
+    def __init__(self):
+        self.root = tk.Tk()
+        
+        # Create widgets
+        label_title = tk.Label(text="Interest Rate Calculator", font=(None, 16))
+        entry_principal = tk.Entry(width=10)
+        entry_rate = tk.Entry(width=10)
+        entry_time = tk.Entry(width=10)
+        combo_frequency = tk.ttk.Combobox(values=[12, 4])
+        button_calculate = tk.Button(text='Calculate', width=8, height=1, command=partial(self.on_button_click, None))
+        textbox_output = tk.Text(height=7, wrap='word')
+        
+        # Layout widgets
+        label_title.grid(row=0, columnspan=3, pady=(10, 5))
+        tk.Grid.columnconfigure(entry_principal._winfo_parent(), index=0, weight=1)
+        tk.Grid.columnconfigure(entry_rate._winfo_parent(), index=1, weight=1)
+        tk.Grid.columnconfigure(entry_time._winfo_parent(), index=2, weight=1)
+        tk.Grid.rowconfigure(combo_frequency._winfo_parent(), index=3, weight=1)
+        entry_principal.grid(row=1, column=0, padx=(5, 0), sticky='ew')
+        entry_rate.grid(row=1, column=1, padx=(5, 0), sticky='ew')
+        entry_time.grid(row=1, column=2, padx=(5, 0), sticky='ew')
+        combo_frequency.grid(row=2, column=0, columnspan=3, ipadx=10, pady=(5, 0), sticky='we')
+        button_calculate.grid(row=3, column=0, columnspan=3, pady=(5, 0))
+        textbox_output.grid(row=4, rowspan=2, column=0, columnspan=3, padx=5, pady=(5, 10), sticky='nesw')
+        
+        # Bindings & event handlers
+        root.bind('<Return>', lambda e: self.on_button_click(e))
+        
+        self.root.mainloop()
+            
+    @staticmethod
+    def format_result(value):
+        if isinstance(value, str):
+            return value
+        else:
+            formatted_val = "{:,.2f}".format(round(float(value), 2)).replace('.', ',')
+            return "$" + formatted_val
+                  
+    def on_button_click(self, _event):
+        try:
+            principal = float(self.get_field_data(entry_principal))
+            rate = float(self.get_field_data(entry_rate))
+            time = float(self.get_field_data(entry_time))
+            frequency = int(self.get_combobox_selection())
+            
+            si = simple_interest(principal, rate, time)
+            ci = compound_interest(principal, rate, time, frequency)
+            
+            output_simple = "\n\nSimple Interest:\n$ {}\n".format(self.format_result(si))
+            output_compound = "\nCompound Interest:\n$ {} ({})\n".format(self.format_result(ci), frequency) \
+                if frequency != 12 else ""
+            
+            result_string = ''.join([output_simple, output_compound])
+            self.set_output(result_string)
+        except Exception as err:
+            print(err)
+            message = '\nPlease enter valid values.\n'
+            self.set_output(message)
+            
+    def get_field_data(self, field):
+        data = field.get().strip()
+        return '' if not data else data
+      
+    def set_output(self, string):
+        clear_command = ['delete', '1.0', 'end']
+        write_command = ['insert', 'end', string]
+        self.root.after_idle(*clear_command)
+        self.root.after_idle(*write_command)
+          
+    def get_combobox_selection(self):
+        selection = combo_frequency.current()
+        return combo_frequency['values'][selection] if len(combo_frequency['values']) > selection else False
+
+app = CalculatorApp()
