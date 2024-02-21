@@ -1,0 +1,10 @@
+function calculate() {
+    var principal = parseFloat(document.getElementById('principal').value);
+    var rate = parseFloat(document.getElementById('rate').value);
+    var days = parseFloat(document.getElementById('days').value);
+
+    var interestPerDay = Numeral.calculateInterestPerDay(principal, rate, days);
+    var interestPerYear = Numeral.calculateInterestPerYear(principal, rate);
+
+    document.getElementById('result').innerHTML = "Interest per day: $" + interestPerDay.toFixed(2) + "<br>Interest per year: $" + interestPerYear.toFixed(2);
+}
